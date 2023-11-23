@@ -7,7 +7,7 @@ Setting `workerGroupSize` to `3` fixes the problem on a local machine (since it 
 
 To reproduce:
 1. Start the application with `./gradlew run`
-2. Connect to the websocket at `http://localhost:8080/subscriptions`
+2. Connect to the websocket at `ws://localhost:8080/subscriptions`
 3. Send `init` message: `{"type":"connection_init"}`
 4. Send `subscribe` message: `{"type":"subscribe", "id":"12345", "payload": {"query": "subscription { random }" } }`
 5. No messages are returned and subscription "hangs" and the worker thread (`eventLoopGroupProxy`) has state `WAITING`
