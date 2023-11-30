@@ -10,11 +10,6 @@ import kotlin.random.Random
 
 private const val DELAY_TIME: Long = 1000
 
-// At least one query required
-class ExampleQuery : Query {
-    fun ping() = "pong"
-}
-
 class ExampleSubscription : Subscription {
     suspend fun random(): Flow<Int> {
         slowMethod()
@@ -30,8 +25,13 @@ class ExampleSubscription : Subscription {
 
     private suspend fun slowMethod() {
         // Do something that takes some time and could cause the execution to be suspended
-        println("Entered slowMethod")
-        yield()
+        println("Entering slowMethod")
+        yield() // Suspend current coroutine to trigger the problem
         println("Exiting slowMethod") // Will never get here
     }
+}
+
+// At least one query required
+class ExampleQuery : Query {
+    fun ping() = "pong"
 }

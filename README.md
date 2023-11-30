@@ -1,9 +1,12 @@
 ## Subscriptions with graphql-kotlin-ktor-server
 
-A deadlock occurs when calling subscriptions in `graphql-kotlin-ktor-server` if a suspendable function is called (that actually suspends execution) 
-if there aren't enough workers (`workerGroupSize` is set to `2` in `application.conf`).
+A deadlock occurs when calling subscriptions in `graphql-kotlin-ktor-server` with Netty as engine if a suspendable function is called (that actually suspends execution) 
+if there aren't enough workers (`workerGroupSize` is set to `2` in `application.conf` or using default settings on a machine with 2 CPUs).
 
-Setting `workerGroupSize` to `3` fixes the problem on a local machine (since it has more than 2 CPUs), but we're running on AWS on instances with only 2 CPUs.
+Explicitly setting `workerGroupSize` to `3` or higher seems to fix the problem, at least on a local machine (since it has more than 2 CPUs).
+
+This problem was found on AWS Elastic Container Service when running on instances reporting to have 2 CPUs (even with different vCPUs config) 
+and not specifying `workerGroupSize` and hence using the default and recommended settings (number of processors / 2 + 1 as defined [here](https://github.com/ktorio/ktor/blob/eb6d0f86adc8efa1386925d4067d4b1b77b087d7/ktor-server/ktor-server-core/jvmAndNix/src/io/ktor/server/engine/ApplicationEngine.kt#L33C62-L33C62)) 
 
 To reproduce:
 1. Start the application with `./gradlew run`
@@ -12,7 +15,7 @@ To reproduce:
 4. Send `subscribe` message: `{"type":"subscribe", "id":"12345", "payload": {"query": "subscription { random }" } }`
 5. No messages are returned and subscription "hangs" and the worker thread (`eventLoopGroupProxy`) has state `WAITING`
 
-### Full thread dump
+### Full thread dump from IntelliJ
 ```
 "eventLoopGroupProxy-3-2 @raw-ws-handler#20@5243" daemon prio=5 tid=0x2a nid=NA waiting
   java.lang.Thread.State: WAITING
